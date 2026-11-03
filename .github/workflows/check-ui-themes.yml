@@ -1,0 +1,116 @@
+name: Check UI themes
+
+on:
+  pull_request:
+    branches: ['theme-*']
+  push:
+    branches: ['theme-*']
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Validate theme contents
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import struct
+          import subprocess
+          import sys
+
+          images = {".png", ".jpg", ".jpeg", ".bmp", ".gif"}
+          text_files = {".properties", ".toml", ".md", ".txt"}
+          special = {"LICENSE", "CODEOWNERS", ".gitignore", ".gitattributes"}
+          workflow = ".github/workflows/check-ui-themes.yml"
+          theme_files = ("sprite-map.properties", "overrides.toml", "color.properties")
+          theme_dirs = ("tab", "button", "chatbox", "hdos", "fixed_mode", "resizeable_mode")
+          errors = []
+          total = 0
+
+          for raw in subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0"):
+              if not raw:
+                  continue
+
+              name = os.fsdecode(raw)
+              path = pathlib.Path(name)
+              suffix = path.suffix.lower()
+
+              if any(ord(char) < 32 or char == "\\" for char in name):
+                  errors.append(f"{name!r}: unsafe filename")
+                  continue
+              if path.is_symlink() or not path.is_file():
+                  errors.append(f"{name}: links and non-files are not allowed")
+                  continue
+              if name.startswith(".github/") and name != workflow:
+                  errors.append(f"{name}: unexpected GitHub configuration file")
+                  continue
+              if suffix not in images | text_files and path.name not in special and name != workflow:
+                  errors.append(f"{name}: unexpected file type")
+                  continue
+
+              size = path.stat().st_size
+              total += size
+              if size > 10 * 1024 * 1024:
+                  errors.append(f"{name}: exceeds 10 MB")
+                  continue
+
+              if suffix in text_files and b"\0" in path.read_bytes():
+                  errors.append(f"{name}: text file contains binary data")
+
+              if suffix == ".png":
+                  with path.open("rb") as image:
+                      header = image.read(24)
+                  if (
+                      len(header) != 24
+                      or header[:8] != b"\x89PNG\r\n\x1a\n"
+                      or header[8:12] != b"\x00\x00\x00\x0d"
+                      or header[12:16] != b"IHDR"
+                  ):
+                      errors.append(f"{name}: invalid PNG header")
+                  else:
+                      width, height = struct.unpack(">II", header[16:24])
+                      if not (1 <= width <= 8192 and 1 <= height <= 8192):
+                          errors.append(f"{name}: PNG dimensions are out of range")
+              elif suffix in {".jpg", ".jpeg"}:
+                  with path.open("rb") as image:
+                      if image.read(3) != b"\xff\xd8\xff":
+                          errors.append(f"{name}: invalid JPEG header")
+              elif suffix == ".gif":
+                  with path.open("rb") as image:
+                      header = image.read(10)
+                  if len(header) != 10 or header[:6] not in {b"GIF87a", b"GIF89a"}:
+                      errors.append(f"{name}: invalid GIF header")
+                  else:
+                      width, height = struct.unpack("<HH", header[6:10])
+                      if not (1 <= width <= 8192 and 1 <= height <= 8192):
+                          errors.append(f"{name}: GIF dimensions are out of range")
+              elif suffix == ".bmp":
+                  with path.open("rb") as image:
+                      if image.read(2) != b"BM":
+                          errors.append(f"{name}: invalid BMP header")
+
+          if not any(pathlib.Path(name).is_file() for name in theme_files) and not any(
+              pathlib.Path(name).is_dir() for name in theme_dirs
+          ):
+              errors.append("No HDOS theme files or directories found at the branch root")
+
+          if total > 50 * 1024 * 1024:
+              errors.append("Theme exceeds 50 MB total")
+
+          if errors:
+              print("Theme checks failed:")
+              for error in errors:
+                  print(f" - {error}")
+              sys.exit(1)
+
+          print("Theme file checks passed.")
+          PY
