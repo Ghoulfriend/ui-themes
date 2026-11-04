@@ -35,6 +35,7 @@ jobs:
           theme_dirs = ("tab", "button", "chatbox", "hdos", "fixed_mode", "resizeable_mode")
           errors = []
           total = 0
+          has_theme_files = False
 
           for raw in subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0"):
               if not raw:
@@ -43,6 +44,8 @@ jobs:
               name = os.fsdecode(raw)
               path = pathlib.Path(name)
               suffix = path.suffix.lower()
+              if suffix in images or suffix in {".properties", ".toml"}:
+                  has_theme_files = True
 
               if any(ord(char) < 32 or char == "\\" for char in name):
                   errors.append(f"{name!r}: unsafe filename")
@@ -98,10 +101,15 @@ jobs:
                       if image.read(2) != b"BM":
                           errors.append(f"{name}: invalid BMP header")
 
-          if not any(pathlib.Path(name).is_file() for name in theme_files) and not any(
-              pathlib.Path(name).is_dir() for name in theme_dirs
-          ):
-              errors.append("No HDOS theme files or directories found at the branch root")
+          if has_theme_files:
+              roots = [pathlib.Path(".")]
+              roots.extend(path for path in roots[0].iterdir() if path.is_dir())
+              if not any(
+                  any((root / name).is_file() for name in theme_files)
+                  or any((root / name).is_dir() for name in theme_dirs)
+                  for root in roots
+              ):
+                  errors.append("No HDOS theme folder found at the root or one folder below it")
 
           if total > 50 * 1024 * 1024:
               errors.append("Theme exceeds 50 MB total")
