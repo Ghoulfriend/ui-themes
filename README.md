@@ -1,25 +1,18 @@
-# UI Themes
+# Theme name
 
-Community-created UI themes for the HDOS client. Use the branch menu above to browse them.
-
-## Contributing
-
-### Add a theme
-
-Choose a short branch name starting with `theme-`, such as `theme-2009` or `theme-2011-modern`. Use hyphens between words and keep one theme per branch.
-
-Create the theme branch from `master` before adding files.
-
-Add your theme files in your fork, then open a pull request with the new theme branch selected as the **base**.
-
-### Update a theme
-
-Start from the latest version of the theme branch, make your changes in a branch in your fork, and open a pull request back into the theme branch.
-
-Pull requests are checked and reviewed before merging.
+A short description of your theme for the HDOS client.
 
 ## Credits
 
-Each theme should include a README naming its creator and crediting any other assets used, if applicable.
+Created by **your name**.
+
+Credit any other assets used, if applicable.
 
 See the [Theme License](LICENSE.md) for usage and attribution details.
+
+<!-- Replace the name, description and credits above, then remove this comment.
+Create a theme-<name> branch from theme-template in your fork and add your theme
+files. Open a pull request into hdos-dev/ui-themes:theme-template.
+After the checks pass and a maintainer approves, the bot publishes your theme
+to its own branch. Keep .github out of your theme branch.
+-->
