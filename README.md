@@ -1,25 +1,12 @@
-# UI Themes
+# Smoother Overheads
+This is a theme that attempts to make the overhead prayers a bit smoother without smearing the actual icon, plays best at 16x AA
 
-Community-created UI themes for the HDOS client. Use the branch menu above to browse them.
+**Download**: [***Link***](https://github.com/Ghoulfriend/ui-themes/archive/refs/heads/theme-smoother-overheads.zip)
+**Created by**: *Anonymous Toblerone Eater*
 
-## Contributing
+## Previews:
+<img width="230" height="230" alt="melee" src="https://github.com/user-attachments/assets/b8b6b86a-2413-4fc4-ab85-d33481dc3fab" />
+<img width="230" height="230" alt="mage" src="https://github.com/user-attachments/assets/e9e40a7c-3ee0-4b95-bef2-2f97c4270f35" />
+<img width="230" height="230" alt="ranged" src="https://github.com/user-attachments/assets/e6197559-6973-41d3-ab63-fae7b7ec1b86" />
 
-### Add a theme
 
-Choose a short branch name starting with `theme-`, such as `theme-2009` or `theme-2011-modern`. Use hyphens between words and keep one theme per branch.
-
-Create the theme branch from `master` before adding files.
-
-Add your theme files in your fork, then open a pull request with the new theme branch selected as the **base**.
-
-### Update a theme
-
-Start from the latest version of the theme branch, make your changes in a branch in your fork, and open a pull request back into the theme branch.
-
-Pull requests are checked and reviewed before merging.
-
-## Credits
-
-Each theme should include a README naming its creator and crediting any other assets used, if applicable.
-
-See the [Theme License](LICENSE.md) for usage and attribution details.
